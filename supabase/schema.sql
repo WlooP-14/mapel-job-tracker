@@ -1164,4 +1164,24 @@ begin
  insert into public.remarks(entity_type,entity_id,text,kind,created_by) values('receiving',p_receipt,jsonb_build_object('code','receipt_undone','values',jsonb_build_object('qty',v_old.qty_found))::text,'info',auth.uid());
 end $$;
 
+-- Source: 20261107102600_allow_admin_viewer_promotions.sql
+-- Admins can promote viewers and operators, and developers retain oversight of admins.
+alter policy update_users on public.users
+ with check ((select app_private.current_app_role())='developer' or ((select app_private.current_app_role())='admin' and role in ('viewer','operator','admin')));
+
+-- Source: 20261107102614_self_registration.sql
+-- Only the server's Auth Admin API can set the application metadata marker.
+create function app_private.create_self_registered_profile() returns trigger
+language plpgsql security definer set search_path='' as $$
+begin
+ if new.raw_app_meta_data->>'mjt_self_registration' = 'true' then
+  insert into public.users(id,name,phone,role,active)
+  values(new.id,new.raw_user_meta_data->>'full_name','+'||ltrim(new.phone,'+'),'viewer',false);
+ end if;
+ return new;
+end $$;
+revoke all on function app_private.create_self_registered_profile() from public,anon,authenticated;
+create trigger create_self_registered_profile after insert on auth.users
+for each row execute function app_private.create_self_registered_profile();
+
 commit;
