@@ -1,0 +1,9 @@
+'use client';
+import {useId,useState} from 'react';
+export const buttonClass='button-content min-h-12 rounded-[8px] border border-[var(--border)] px-4 py-2 font-bold disabled:cursor-wait disabled:opacity-60';
+export const inputClass='mt-1 block min-h-12 w-full rounded-[8px] border border-[var(--border)] bg-white px-3 py-2 text-base';
+export function Button({primary=false,className='',...props}){return <button className={`${buttonClass} ${primary?'border-[var(--red)] bg-[var(--red)] text-white':''} ${className}`} {...props}/>;}
+export function SelectionShortcut({target,label}){return <Button primary className="selection-shortcut" onClick={()=>target.current?.scrollIntoView({behavior:'smooth',block:'start'})}>{label}</Button>;}
+export function Field({label,hint,children}){const id=useId();return <div><label htmlFor={id} className="block font-bold">{label}</label>{typeof children==='function'?children(id):children}{hint&&<p className="mt-1 text-[var(--muted)]">{hint}</p>}</div>;}
+export function HelpHint({text,label,close}){const [open,setOpen]=useState(false);const id=useId();return <span className="inline-block"><button type="button" aria-label={label} aria-controls={id} aria-expanded={open} onClick={()=>setOpen(!open)} className="ml-1 min-h-12 min-w-12 font-bold text-[var(--red)]">?</button>{open&&<span id={id} role="note" className="block rounded-[8px] border border-[var(--border)] p-3 font-normal">{text} <button onClick={()=>setOpen(false)} className="min-h-12 underline">{close}</button></span>}</span>;}
+export function StatusPill({status,label}){const styles=['border-[var(--border)] text-[var(--ink)]','border-2 border-[var(--ink)]','border-[var(--border)] text-[var(--muted)]','border-[var(--red)] bg-[var(--red)] text-white','border-[var(--border)] text-[var(--muted)]'];return <span className={'inline-block rounded-full border px-3 py-1 font-bold '+styles[status]}>{label}</span>;}

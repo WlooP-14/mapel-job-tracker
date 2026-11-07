@@ -1,0 +1,28 @@
+# Mould Job Tracker
+
+## Current hosted setup
+
+Connected through the Management API to the existing Mapel Project (`emrjfelkxbegkvyxszba`). Eleven migrations are applied. All 24 public tables use RLS; 23 operational/configuration tables have audit triggers, and the audit log is immutable. Private source/evidence Storage and phone + PIN sign-in are verified. Server credentials stay in ignored local files. No SMS or paid service was enabled. Independent backups are not active.
+
+## Run
+Install Node.js and run `npm install`, copy `.env.example` to `.env.local`, set the Supabase URL and publishable key, and run `npm run dev`. Run `npm test` for scheduling and PostgreSQL migration/RLS tests (PGlite emulates the Supabase auth and storage schemas) and `npm run build` for a production build.
+
+Apply `supabase/migrations` to a new Supabase project with the Supabase CLI. The configured project uses phone + PIN sign-in without SMS. Create the first developer using a trusted SQL administration session after creating an Auth user: `insert into public.users(id,name,role) values ('AUTH-USER-UUID','Name','developer');`. Add each other Auth user to `public.users`; an Auth account without an active profile has no access. Never expose a service role key to the browser. The mobile number must be in international format.
+
+The schema enforces roles, immutable history, audit triggers and no hard deletes. Admin/developer Settings provisions personal accounts through a server-only Auth endpoint. Readiness counts unplanned parts as waiting and excludes parts whose steps are all not applicable. Hardware uses Received → Verified → Issued, without allotment. Bulk work uses actual sent dates, configured routes/durations, partial returns and retained history. Assembly and trial gates protect Finished/Reopen in the database. Physical BOM/work changes invalidate earlier assembly. Restrict database-owner credentials, which can bypass application security.
+
+## Backups: deployment is required
+The scheduled GitHub Actions workflow runs nightly at 02:00 India time and uses a PostgreSQL 17 container to stream a custom dump through GPG encryption before uploading to a separate S3 account. It is not active until this repository is hosted in GitHub and the listed secrets are configured. Use a dedicated read-only PostgreSQL backup account, a developer-held GPG private key (only the public key goes into CI), and a dedicated S3 identity that can only `s3:PutObject` on a unique `nightly/` prefix. Do not put these credentials in the app or Supabase. Enable S3 versioning and Object Lock with retention enforced by the destination account, and deny deletion, retention bypass, and bucket administration to the upload identity. Configure destination lifecycle/retention for 30 daily days, monthly copies for at least two years, and permanent yearly copies using destination-side policies or an independent archive process. Monitor workflow failures. Test a restore monthly in a separate environment; the dump covers the database, not Supabase Storage objects or Auth provider configuration. Separately back up private Storage objects and verify their restoration before production. Managed point-in-time recovery and the plan's Drive/Excel and second-location copies also require separate setup. No backups are claimed to be running until verified.
+
+## Scope and decisions
+The existing app follows fetched Stitch references, with the final plan taking precedence. Login, navigation, Help/tour, Settings, mould list/create/detail, four BOM categories, Excel review, Receiving, bulk Planning/allotment, in-house/vendor work and Assembly/Trials are connected to Supabase. Live QA covers partial receipts/returns, corrections, private evidence, Finish and Reopen. The nightly stage-alert checker runs in Supabase at 01:00 India time; its schedule and a manual execution are verified, while the first scheduled run has not yet occurred. See [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) for evidence and remaining gaps. The production build and 28 tests pass.
+
+The PWA has an install manifest and a cached navigation shell. Local BOM draft recovery is implemented; a general offline write queue and conflict review are not. Automatic photo/PDF extraction is unconfigured; manual transcription can retain the original file without AI charges. External backups and a restore drill are not active. No purchasing or gate-pass features are included.
+
+An example uploader identity policy is in `infra/backup-uploader-policy.json`; replace the bucket placeholder. Attach it only to a dedicated identity in the backup account. Object Lock and retention are destination-side settings managed by a separate administrator. The application must have no credentials for that account. The example is not a substitute for bucket-policy review and a restore drill.
+
+## Supabase walkthrough
+See [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) for project creation, migrations, public keys, phone OTP, first-developer provisioning and backup activation. The first-developer helper uses server-only credentials on your trusted computer. The current developer is already provisioned. Settings now includes profile/language for all roles and stage-duration editing for admins/developers.
+
+## Database schema artifact
+The consolidated fresh-project SQL is [supabase/schema.sql](supabase/schema.sql). The [schema guide](docs/SUPABASE_SCHEMA.md) includes the table dictionary, access matrix and relationship diagram. The existing hosted project already has its source migrations; do not rerun the fresh-project installer there. Regenerate it with `npm run schema:build` after migration changes.

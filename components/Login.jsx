@@ -1,0 +1,10 @@
+'use client';
+import {useState} from 'react';
+import {signInWithPin} from '../lib/pin-auth';
+import {Button,Field,inputClass} from './ui';
+import {Icon,StateBox} from './Shell';
+export default function Login({client,t}){
+ const [phone,setPhone]=useState(''),[pin,setPin]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[show,setShow]=useState(false);
+ async function submit(e){e.preventDefault();setBusy(true);setError('');try{const result=await signInWithPin(client,phone,pin);if(result.error)setError(result.error.status===429?t.shell.tooMany:t.invalid);else setPin('');}catch{setError(t.shell.networkError)}finally{setBusy(false)}}
+ return <section className="login-page"><div className="login-brand"><img src="/mapel-logo.png" width="88" height="88" alt={t.shell.brandAlt}/><h1>{t.app}</h1><p>{t.shell.loginSubtitle}</p></div>{!client?<StateBox title={t.config} detail={t.shell.configHelp}/>:<form onSubmit={submit} className="panel login-form"><div className="section-heading"><h2>{t.signIn}</h2><span className="plain-badge">{t.shell.privatePin}</span></div><p className="muted">{t.signedOut}</p><Field label={t.phone} hint={t.shell.phoneHint}>{id=><div className="input-icon"><Icon name="receive"/><input id={id} type="tel" autoComplete="username" className={inputClass} value={phone} onChange={e=>setPhone(e.target.value)} required maxLength={16} pattern="\+[1-9][0-9]{7,14}"/></div>}</Field><Field label={t.pin}>{id=><input id={id} className={inputClass} type={show?'text':'password'} autoComplete="current-password" inputMode="numeric" pattern="[0-9]{8,12}" minLength={8} maxLength={12} value={pin} onChange={e=>setPin(e.target.value)} required/>}</Field><label className="check-row"><input type="checkbox" checked={show} onChange={e=>setShow(e.target.checked)}/>{t.shell.showPin}</label>{error&&<StateBox title={error} error/>}<Button primary type="submit" className="w-full" disabled={busy}>{busy?t.loading:t.signIn}<Icon name="chevron"/></Button></form>}<div className="panel login-access"><Icon name="help"/><p>{t.shell.needAccess}</p></div><p className="login-footer">{t.intro}</p></section>;
+}

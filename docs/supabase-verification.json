@@ -1,0 +1,210 @@
+{
+  "projectRef": "emrjfelkxbegkvyxszba",
+  "checkedAt": "2026-11-04T13:06:42.397Z",
+  "database": [
+    {
+      "tables": 24,
+      "tables_without_rls": 0,
+      "policies": 59,
+      "audit_triggers": 23,
+      "app_users": 3,
+      "auth_users": 3,
+      "private_bom_bucket": 1
+    }
+  ],
+  "auth": {
+    "phoneEnabled": true,
+    "smsProvider": "twilio",
+    "siteUrl": "http://localhost:3000"
+  },
+  "security": [
+    {
+      "name": "auth_leaked_password_protection",
+      "level": "WARN",
+      "detail": "Supabase Auth prevents the use of compromised passwords by checking against HaveIBeenPwned.org. Enable this feature to enhance security.",
+      "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
+      "metadata": {
+        "entity": "Auth",
+        "type": "auth"
+      }
+    }
+  ],
+  "performance": [
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`mould_events_actor_idx\\` on table \\`public.mould_events\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "mould_events",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`kill_requests_requested_by_idx\\` on table \\`public.kill_requests\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "kill_requests",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`jobs_customer_id_idx\\` on table \\`public.jobs\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "jobs",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`jobs_created_by_idx\\` on table \\`public.jobs\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "jobs",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`job_date_history_changed_by_idx\\` on table \\`public.job_date_history\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "job_date_history",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`bom_revisions_created_by_idx\\` on table \\`public.bom_revisions\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "bom_revisions",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`bom_items_used_with_item_id_idx\\` on table \\`public.bom_items\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "bom_items",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`dispatch_batches_created_by_idx\\` on table \\`public.dispatch_batches\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "dispatch_batches",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`batch_items_bom_item_id_idx\\` on table \\`public.batch_items\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "batch_items",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`part_steps_vendor_id_idx\\` on table \\`public.part_steps\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "part_steps",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`movements_bom_item_id_idx\\` on table \\`public.movements\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "movements",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`remarks_created_by_idx\\` on table \\`public.remarks\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "remarks",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`receiving_checks_corrects_idx\\` on table \\`public.receiving_checks\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "receiving_checks",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`stage_returns_actor_idx\\` on table \\`public.stage_returns\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "stage_returns",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`stage_returns_corrects_idx\\` on table \\`public.stage_returns\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "stage_returns",
+        "type": "table"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "detail": "Index \\`movements_work_return_idx\\` on table \\`public.movements\\` has not been used",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+      "metadata": {
+        "schema": "public",
+        "name": "movements",
+        "type": "table"
+      }
+    }
+  ]
+}

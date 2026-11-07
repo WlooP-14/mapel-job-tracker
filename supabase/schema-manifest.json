@@ -1,0 +1,82 @@
+{
+  "scope": "Mould Job Tracker database",
+  "tables": [
+    "users",
+    "customers",
+    "jobs",
+    "job_date_history",
+    "bom_sheets",
+    "bom_revisions",
+    "bom_items",
+    "step_templates",
+    "material_routes",
+    "vendors",
+    "dispatch_batches",
+    "batch_items",
+    "part_steps",
+    "receiving_checks",
+    "movements",
+    "remarks",
+    "holidays",
+    "settings",
+    "user_prefs",
+    "developer_credentials",
+    "kill_requests",
+    "audit_log",
+    "stage_returns",
+    "mould_events"
+  ],
+  "tableCount": 24,
+  "views": [
+    "readiness",
+    "criticality",
+    "mould_remarks"
+  ],
+  "migrations": [
+    {
+      "file": "20261103124452_foundation.sql",
+      "sha256": "138623d94212d751bbd87cd551b6ff00036b340aede6f6fa04a28bd0339b6ecc"
+    },
+    {
+      "file": "20261103124457_storage_and_integrity.sql",
+      "sha256": "0ca7417a1f085f01bce49c8f14105dcd67eec6649c14c24ccb95cae2fe7702c3"
+    },
+    {
+      "file": "20261103124946_harden_foundation.sql",
+      "sha256": "ab4ca99a59b9a44d7497ac49b4180f1a5321cab789d5261231d33e30efe36aac"
+    },
+    {
+      "file": "20261104070701_moulds_and_manual_bom.sql",
+      "sha256": "ce9af4946eeffe665188bff83c2a9fc685a1ddfd22b42a58699af2aa66bb8e46"
+    },
+    {
+      "file": "20261104070705_screen_workflows.sql",
+      "sha256": "dd34304f0dd59878932390cba262544ee9b94e39d2ccb3d0fbcbc08a6a6d8678"
+    },
+    {
+      "file": "20261104074010_bom_review.sql",
+      "sha256": "de0f82b9ff47d0572a3ad6822b97094c14e31739a4640f3a22db1498f67325a4"
+    },
+    {
+      "file": "20261104080637_mould_schedule.sql",
+      "sha256": "70026fc138751349b7801de5518b5306c06c8f4c20cfbe4ebf8891f9a1fef8cc"
+    },
+    {
+      "file": "20261104082943_receiving.sql",
+      "sha256": "32c591fb018082340a241b4caad54af6d63cbbebc9ee1a73d670cbad21f91eba"
+    },
+    {
+      "file": "20261104110957_receipt_permissions.sql",
+      "sha256": "3dadc67ed243d2691f875ade2246992734157a65f7c943de31cfe3222e980556"
+    },
+    {
+      "file": "20261104121754_planning_and_work.sql",
+      "sha256": "3e0331771f27778e0e61e5d722f728deb3952eb35e7e94fa0ed396d7c2e1f76d"
+    },
+    {
+      "file": "20261104124119_assembly_and_trials.sql",
+      "sha256": "1426c37325a7cee07f03a4fa2582e48da741fc235e6de86680823e343a9a5b7d"
+    }
+  ],
+  "schemaSha256": "2a342d32c6ce2e57b5cecadcd5fd9f7d4d1106a11a78adce017fbb462b4c0c31"
+}

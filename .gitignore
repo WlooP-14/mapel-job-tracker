@@ -1,0 +1,11 @@
+node_modules
+.next
+.netlify/
+.pilot-deploy/
+.env*
+!.env.example
+coverage
+# Private design references and exported source; never executed as application code.
+design/stitch/
+# Local UI evidence can contain account information; retain it on this computer.
+docs/qa/

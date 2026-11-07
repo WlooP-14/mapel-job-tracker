@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-11-04T13:09:41.210Z",
+  "projectRef": "emrjfelkxbegkvyxszba",
+  "viewerLogin": true,
+  "viewerWriteBlocked": true,
+  "viewerReceiptBlocked": true,
+  "viewerHardwareWriteBlocked": true,
+  "viewerAllotmentBlocked": true,
+  "viewerWorkStartBlocked": true,
+  "viewerWorkReturnBlocked": true,
+  "viewerContextualRemarksReadable": true,
+  "viewerTrialRead": true,
+  "viewerTrialEvidenceHashVerified": true,
+  "mouldState": "active",
+  "viewerTrialWriteBlocked": true,
+  "trialEvents": 7,
+  "activeBatches": 3,
+  "finalStageQuantities": [
+    {
+      "mode": "outsourced",
+      "sent": 6,
+      "returned": 6
+    },
+    {
+      "mode": "inhouse",
+      "sent": 1,
+      "returned": 1
+    },
+    {
+      "mode": "inhouse",
+      "sent": 2,
+      "returned": 2
+    }
+  ],
+  "operatorMasterWriteBlocked": true,
+  "reviewedParts": 5,
+  "categories": [
+    "base",
+    "child",
+    "turn",
+    "hardware"
+  ],
+  "privateSourceReadableByViewer": true,
+  "sourceBytes": 5458
+}

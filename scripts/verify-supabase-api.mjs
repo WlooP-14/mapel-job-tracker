@@ -1,0 +1,11 @@
+import {writeFile} from 'node:fs/promises';
+const ref=process.env.SUPABASE_PROJECT_REF,token=process.env.SUPABASE_ACCESS_TOKEN;
+if(!ref||!token)throw Error('Local Management API credentials are missing.');
+const base=`https://api.supabase.com/v1/projects/${ref}`;
+async function request(endpoint,body){const response=await fetch(base+endpoint,{method:body?'POST':'GET',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(60000)});if(!response.ok)return {httpStatus:response.status};return response.json();}
+const [database,auth,security,performance]=await Promise.all([
+ request('/database/query',{read_only:true,query:`select (select count(*) from pg_tables where schemaname='public') as tables, (select count(*) from pg_tables where schemaname='public' and not rowsecurity) as tables_without_rls, (select count(*) from pg_policies where schemaname='public') as policies, (select count(*) from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and t.tgname='audit_changes' and not t.tgisinternal) as audit_triggers, (select count(*) from public.users) as app_users, (select count(*) from auth.users) as auth_users, (select count(*) from storage.buckets where id='bom-sources' and not public) as private_bom_bucket`}),
+ request('/config/auth'),request('/advisors/security'),request('/advisors/performance')]);
+function summarize(data){if(data.httpStatus)return data;const items=Array.isArray(data)?data:data.lints||data.result||[];return items.map(item=>({name:item.name,level:item.level,detail:item.detail,remediation:item.remediation,metadata:item.metadata}));}
+const report={projectRef:ref,checkedAt:new Date().toISOString(),database,auth:auth.httpStatus?auth:{phoneEnabled:auth.external_phone_enabled,smsProvider:auth.sms_provider,siteUrl:auth.site_url},security:summarize(security),performance:summarize(performance)};
+await writeFile('docs/supabase-verification.json',JSON.stringify(report,null,2));console.log(JSON.stringify({...report,security:Array.isArray(report.security)?report.security.map(x=>({name:x.name,level:x.level,detail:x.detail})):report.security,performance:Array.isArray(report.performance)?report.performance.map(x=>({name:x.name,level:x.level})):report.performance},null,2));

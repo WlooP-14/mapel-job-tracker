@@ -1,0 +1,5 @@
+export const partHistoryMessages={
+ en:{open:'Open parts',title:'Completed parts',empty:'No parts have completed all their stages yet.',noOpen:'No open parts in this section.',search:'Search by part, material, vendor or remark',noMatch:'No completed parts match your search.',received:'First received',completed:'Completed on',days:'Calendar days from receipt',vendors:'Vendors'},
+ hi:{open:'बाकी पार्ट',title:'पूरे हुए पार्ट',empty:'अभी किसी पार्ट के सभी चरण पूरे नहीं हुए हैं।',noOpen:'इस सेक्शन में कोई बाकी पार्ट नहीं है।',search:'पार्ट, मटेरियल, वेंडर या टिप्पणी खोजें',noMatch:'खोज से मेल खाने वाला कोई पूरा पार्ट नहीं मिला।',received:'पहली प्राप्ति',completed:'पूरा होने की तारीख',days:'प्राप्ति से कैलेंडर दिन',vendors:'वेंडर'},
+ mr:{open:'बाकी पार्ट',title:'पूर्ण झालेले पार्ट',empty:'अजून कोणत्याही पार्टचे सर्व टप्पे पूर्ण झालेले नाहीत.',noOpen:'या विभागात बाकी पार्ट नाहीत.',search:'पार्ट, मटेरियल, व्हेंडर किंवा शेरा शोधा',noMatch:'शोधाशी जुळणारा पूर्ण झालेला पार्ट सापडला नाही.',received:'पहिली प्राप्ती',completed:'पूर्ण झाल्याची तारीख',days:'प्राप्तीपासून कॅलेंडर दिवस',vendors:'व्हेंडर'}
+};
