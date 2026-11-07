@@ -76,7 +76,11 @@
     {
       "file": "20261104124119_assembly_and_trials.sql",
       "sha256": "1426c37325a7cee07f03a4fa2582e48da741fc235e6de86680823e343a9a5b7d"
+    },
+    {
+      "file": "20261107100631_persistent_receipt_undo.sql",
+      "sha256": "130dc6011b6770dca8b2520aa791b96372ede96e520438055bfef4df6671c1d6"
     }
   ],
-  "schemaSha256": "2a342d32c6ce2e57b5cecadcd5fd9f7d4d1106a11a78adce017fbb462b4c0c31"
+  "schemaSha256": "0c8b96562374867cca9b7d614fa1ae1ac42f0b4f898dfe87994aecea7e93c8fe"
 }

@@ -10,12 +10,13 @@ import MouldWorkspace from './MouldWorkspace';
 import {Vendors,Alerts} from './Directories';
 import {AppHeader,BottomNav,StateBox} from './Shell';
 import {Button} from './ui';
+import {authStorage} from '../lib/pin-auth';
 export default function App(){
  const [lang,setLang]=useState('en'),[tour,setTour]=useState(-1),[page,setPage]=useState('dashboard'),[session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true),[profile,setProfile]=useState(null),[profileError,setProfileError]=useState(false),[notice,setNotice]=useState(''),[offline,setOffline]=useState(false);
  const [mouldOpen,setMouldOpen]=useState(false);
  useEffect(()=>{window.scrollTo(0,0)},[page,profile?.id]);
  const languageVersion=useRef(0);const t=messages[lang];
- const [client]=useState(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key):null;});
+ const [client]=useState(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key,{auth:{storage:authStorage}}):null;});
  useEffect(()=>{document.documentElement.lang=lang;},[lang]);
  useEffect(()=>{const value=localStorage.getItem('mjt-language');if(messages[value])setLang(value);if('serviceWorker'in navigator){if(['localhost','127.0.0.1'].includes(location.hostname)){navigator.serviceWorker.getRegistrations().then(registrations=>Promise.all(registrations.filter(r=>r.active?.scriptURL.endsWith('/sw.js')).map(r=>r.unregister()))).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('mould-shell-')).map(k=>caches.delete(k)))).catch(()=>{});}else navigator.serviceWorker.register('/sw.js').catch(()=>{});}const update=()=>setOffline(!navigator.onLine);update();window.addEventListener('online',update);window.addEventListener('offline',update);return()=>{window.removeEventListener('online',update);window.removeEventListener('offline',update);}},[]);
  useEffect(()=>{if(!client){setAuthLoading(false);return;}let active=true;client.auth.getSession().then(({data,error})=>{if(active){setSession(error?null:data.session);setAuthLoading(false);}}).catch(()=>{if(active)setAuthLoading(false)});const {data:{subscription}}=client.auth.onAuthStateChange((_event,s)=>{setSession(s);setAuthLoading(false);});return()=>{active=false;subscription.unsubscribe();};},[client]);

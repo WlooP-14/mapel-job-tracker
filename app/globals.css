@@ -9,6 +9,10 @@
  .work-stage{border:1px solid var(--border);border-radius:8px;padding:12px}
 .selection-shortcut{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:608px;z-index:8;box-shadow:0 0 0 8px white}
 button[aria-pressed=true]{border-color:var(--red);color:var(--red)}
+.login-pin-grid{position:relative;margin-top:4px}
+.login-pin-boxes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.login-pin-boxes span{display:grid;place-items:center;min-height:48px;border:1px solid var(--border);border-radius:8px;font-weight:700}
+.login-pin-input{position:absolute;inset:0;width:100%;color:transparent;caret-color:transparent;background:transparent;border-radius:8px;cursor:text}
 .box-label-sheet{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:8px}
 .box-label{display:grid;justify-items:center;align-content:start;gap:3px;text-align:center;border:1px solid var(--border);padding:8px;break-inside:avoid}
 .box-label img{width:112px;height:112px}

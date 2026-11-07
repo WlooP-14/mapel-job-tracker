@@ -31,13 +31,19 @@ test('partial receipts, retries, corrections, Undo and hardware steps retain his
  assert.equal((await db.query("select count(*)::int as n from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('record_receipt','undo_receipt','correct_receipt','set_hardware_step','team_actor_names') and p.prosecdef")).rows[0].n,0);
  assert.equal((await db.query("select has_function_privilege('anon','public.record_receipt(uuid,uuid,numeric,boolean,date,text)','EXECUTE') as allowed")).rows[0].allowed,false);
  await assert.rejects(as(other,'select public.undo_receipt($1)',[ids[0]]),/RECEIPT_UNAVAILABLE/);
- await db.query("update public.receiving_checks set checked_on=now()-interval '20 seconds' where id=$1",[ids[0]]);await assert.rejects(as(operator,'select public.undo_receipt($1)',[ids[0]]),/UNDO_EXPIRED/);
+ await db.query("update public.receiving_checks set checked_on=now()-interval '20 seconds' where id=$1",[ids[0]]);await as(operator,'select public.undo_receipt($1)',[ids[0]]);assert.ok((await db.query('select archived_at from public.receiving_checks where id=$1',[ids[0]])).rows[0].archived_at);
  await db.query("update public.part_steps set status='IN PROCESS' where bom_item_id=$1 and step_name='Turning'",[item]);await assert.rejects(as(operator,'select public.correct_receipt($1,$2,1,false,$3,$4)',[ids[4],ids[5],day,'Short correction']),/RECEIPT_IN_USE/);
  await assert.rejects(as(operator,'select public.revise_bom_item($1,$2,$3)',[job,JSON.stringify({update_id:item,category:'turn',name:'Pin',qty_required:5}),'Extra quantity']),/QUANTITY_WITH_PROGRESS/);
  const hardware=(await as(operator,'select public.add_bom_item($1,$2) as id',[job,JSON.stringify({category:'hardware',name:'Bolt',qty_required:2})])).rows[0].id;
  await assert.rejects(as(operator,"select public.set_hardware_step($1,'Verified',true)",[hardware]),/RECEIVE_FIRST/);
  await as(operator,'select public.record_receipt($1,$2,2,false,$3,\'\')',[hardware,ids[5],day]);await assert.rejects(as(operator,"select public.set_hardware_step($1,'Issued',true)",[hardware]),/VERIFY_FIRST/);
  await as(operator,"select public.set_hardware_step($1,'Verified',true)",[hardware]);await as(operator,"select public.set_hardware_step($1,'Issued',true)",[hardware]);await assert.rejects(as(operator,"select public.set_hardware_step($1,'Verified',false)",[hardware]),/UNDO_ISSUE_FIRST/);
+ const excess='00000000-0000-0000-0000-000000000104';
+ await as(operator,"select public.record_receipt($1,$2,30,false,$3,'')",[hardware,excess,day]);
+ await db.query("update public.receiving_checks set checked_on=now()-interval '1 day' where id=$1",[excess]);
+ await as(operator,'select public.undo_receipt($1)',[excess]);
+ assert.equal((await db.query('select sum(qty_found)::int as total from public.receiving_checks where bom_item_id=$1 and archived_at is null',[hardware])).rows[0].total,2);
+ await assert.rejects(as(operator,'select public.undo_receipt($1)',[ids[5]]),/RECEIPT_IN_USE/);
  assert.equal((await as(viewer,'select parts_ready from public.readiness where job_id=$1',[job])).rows[0].parts_ready,1);
  }finally{await db.close()}
 });
