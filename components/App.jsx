@@ -11,6 +11,7 @@ import {Vendors,Alerts} from './Directories';
 import {AppHeader,BottomNav,StateBox} from './Shell';
 import {Button} from './ui';
 import {authStorage} from '../lib/pin-auth';
+import RequiredUpdate from './RequiredUpdate';
 export default function App(){
  const [lang,setLang]=useState('en'),[tour,setTour]=useState(-1),[page,setPage]=useState('dashboard'),[session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true),[profile,setProfile]=useState(null),[profileError,setProfileError]=useState(false),[notice,setNotice]=useState(''),[offline,setOffline]=useState(false);
  const [mouldOpen,setMouldOpen]=useState(false);
@@ -38,5 +39,5 @@ export default function App(){
  else if(page==='vendors')content=<Vendors client={client} profile={profile} t={t}/>;
  else if(page==='alerts')content=<Alerts client={client} t={t}/>;
  else content=<MouldWorkspace onDetailChange={setMouldOpen} key={page} client={client} profile={profile} t={t} view={page}/>;
- return <div className="app-shell"><AppHeader t={t} language={lang} onLanguage={changeLang} onNavigate={navigate} signedIn={signedIn}/>{(offline||notice)&&<p role="status" className="app-notice">{offline?t.shell.offline:notice}</p>}<main className="app-content">{content}</main>{signedIn&&tour>=0&&<Tour step={tour} t={t} onClose={endTour} onBack={()=>setTour(s=>Math.max(0,s-1))} onNext={()=>tour===t.shell.tourSteps.length-1?endTour():setTour(s=>s+1)}/>} {signedIn&&<BottomNav page={mouldOpen?'moulds':page} onNavigate={navigate} t={t}/>}</div>;
+ return <div className="app-shell"><AppHeader t={t} language={lang} onLanguage={changeLang} onNavigate={navigate} signedIn={signedIn}/>{(offline||notice)&&<p role="status" className="app-notice">{offline?t.shell.offline:notice}</p>}<main className="app-content">{content}</main>{signedIn&&tour>=0&&<Tour step={tour} t={t} onClose={endTour} onBack={()=>setTour(s=>Math.max(0,s-1))} onNext={()=>tour===t.shell.tourSteps.length-1?endTour():setTour(s=>s+1)}/>} {signedIn&&<BottomNav page={mouldOpen?'moulds':page} onNavigate={navigate} t={t}/>}<RequiredUpdate t={t}/></div>;
 }
