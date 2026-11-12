@@ -23,6 +23,7 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.14",
     "@tailwindcss/postcss": "^4.1.0",
+    "fake-indexeddb": "6.2.4",
     "supabase": "3.0.0",
     "tailwindcss": "^4.1.0"
   }

@@ -33,3 +33,19 @@ test('the work plan workbook includes both work locations and current batch prog
  assert.deepEqual(vendor.slice(6), ['Outsourced', '2026-11-04', '2026-11-09', 2, 'Stage Vendor', 'Working', null, 'Not needed', 'No']);
  assert.equal(sheets[0].data.length, 4);
 });
+
+test('the shared plan follows custom process order and includes its vendor',()=>{
+ const stages=[
+  {step_name:'Turning',batch_id:'batch',route_order:1,status:'DONE'},
+  {step_name:'Nitriding',batch_id:'batch',route_order:2,status:'PENDING',vendor_id:'heat'},
+  {step_name:'Grinding',batch_id:'batch',route_order:3,status:'PENDING'}
+ ];
+ const [sheet]=planWorkbook({mould_code:'TEST',name:'Test mould'}, {
+  parts:[{id:'part',category:'turn',serial_no:1,name:'Pin',part_steps:stages,qty_required:1}],
+  batches:[{id:'batch',mode:'outsourced',batch_items:[{bom_item_id:'part',qty_sent:1,qty_back:0}]}],
+  vendors:[{id:'heat',name:'Heat shop'}]
+ },messages.en,'2026-11-12');
+ const values=row=>row.map(cell=>cell?.value);
+ assert.deepEqual(values(sheet.data[1]).slice(10,16),['Stage vendor','Turning','Stage vendor','Nitriding','Stage vendor','Grinding']);
+ assert.equal(values(sheet.data[2])[12],'Heat shop');
+});

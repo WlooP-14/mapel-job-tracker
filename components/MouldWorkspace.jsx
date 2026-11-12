@@ -1,6 +1,7 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
 import {loadMoulds} from '../lib/data';
+import {syncCompleteEvent} from '../lib/offline-sync';
 import {Button,Field,inputClass} from './ui';
 import NewMould from './NewMould';
 import MouldDetail from './MouldDetail';
@@ -14,6 +15,7 @@ export default function MouldWorkspace({client,profile,t,view,onDetailChange}){
  const [scanning,setScanning]=useState(false);
  useEffect(()=>{window.scrollTo(0,0)},[selected?.id,creating,scanning]);
  const refresh=useCallback(async()=>{try{const data=await loadMoulds(client);setJobs(data.jobs);setCustomers(data.customers);setReadiness(data.readiness);setSelected(old=>old?data.jobs.find(j=>j.id===old.id)||null:null);setError('');}catch{setError(t.shell.readError)}finally{setLoading(false)}},[client,t.shell.readError]);
+ useEffect(()=>{window.addEventListener(syncCompleteEvent,refresh);window.addEventListener('online',refresh);return()=>{window.removeEventListener(syncCompleteEvent,refresh);window.removeEventListener('online',refresh);};},[refresh]);
  useEffect(()=>{let timer;const changed=()=>{clearTimeout(timer);timer=setTimeout(refresh,200)};refresh();const channel=client.channel('mould-list:'+profile.id).on('postgres_changes',{event:'*',schema:'public',table:'jobs'},changed).on('postgres_changes',{event:'*',schema:'public',table:'bom_items'},changed).on('postgres_changes',{event:'*',schema:'public',table:'part_steps'},changed).subscribe();return()=>{clearTimeout(timer);client.removeChannel(channel);};},[client,profile.id,refresh]);
  useEffect(()=>{onDetailChange?.(Boolean(selected||creating));return()=>onDetailChange?.(false)},[selected?.id,creating,onDetailChange]);
  useEffect(()=>{let active=true;async function fromUrl(){const id=new URLSearchParams(window.location.search).get('mould');if(!id){setSelected(null);return;}if(!/^[0-9a-f-]{36}$/i.test(id))return;const {data,error}=await client.from('jobs').select('id,mould_code,name,customer_id,trial_date_t0,status,priority').eq('id',id).is('archived_at',null).maybeSingle();if(active){if(error||!data)setError(t.invalid);else setSelected(data);}}fromUrl();window.addEventListener('popstate',fromUrl);return()=>{active=false;window.removeEventListener('popstate',fromUrl);};},[client,t.invalid]);

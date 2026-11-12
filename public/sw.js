@@ -1,5 +1,5 @@
-const CACHE='mould-shell-v3';
-self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/','/icon-192.png','/icon-512.png','/manifest.webmanifest'])));});
+const CACHE='mould-shell-v4';
+self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/','/mapel-icon-192.png','/mapel-icon-512.png','/mapel-icon-180.png','/manifest.webmanifest'])));});
 self.addEventListener('activate',event=>event.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('mould-shell-')&&key!==CACHE).map(key=>caches.delete(key))))])));
 self.addEventListener('fetch',event=>{
  const request=event.request,url=new URL(request.url);

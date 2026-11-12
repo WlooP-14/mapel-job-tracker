@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useState} from 'react';
 import {CATEGORIES} from '../lib/bom';
 import {loadParts} from '../lib/data';
+import {syncCompleteEvent} from '../lib/offline-sync';
 import {Button,HelpHint} from './ui';
 import {StateBox,Icon,Section} from './Shell';
 import {CategoryTabs,PartCard,Readiness,partStatus} from './MouldCards';
@@ -29,6 +30,7 @@ export default function MouldDetail({client,profile,job,customer,customers=[],t,
  useEffect(()=>{window.scrollTo(0,0)},[job.id,adding,editing,receiving,reviewing,uploading,planning,trials,labels]);
  useEffect(()=>{const last=localStorage.getItem(`mjt-tab:${profile.id}:${job.id}`);if(CATEGORIES.includes(last))setCategory(last);},[profile.id,job.id]);
  const reload=useCallback(async()=>{try{const [items,history,jobChanges]=await Promise.all([loadParts(client,job.id),client.from('bom_revisions').select('id,revision_no,reason,at').eq('job_id',job.id).is('archived_at',null).order('revision_no',{ascending:false}).limit(5),client.from('job_date_history').select('id,field,old_value,new_value,reason,at').eq('job_id',job.id).order('at',{ascending:false}).limit(10)]);if(history.error)throw history.error;if(jobChanges.error)throw jobChanges.error;setChanges(jobChanges.data||[]);setParts(items);setRevisions(history.data||[]);setError('');}catch{setError(t.shell.readError)}finally{setLoading(false)}},[client,job.id,t.shell.readError]);
+ useEffect(()=>{window.addEventListener(syncCompleteEvent,reload);window.addEventListener('online',reload);return()=>{window.removeEventListener(syncCompleteEvent,reload);window.removeEventListener('online',reload);};},[reload]);
  useEffect(()=>{let alive=true,timer;const changed=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(alive)reload()},200)};reload();const channel=client.channel(`mould:${job.id}:${profile.id}`).on('postgres_changes',{event:'*',schema:'public',table:'bom_items',filter:`job_id=eq.${job.id}`},changed).on('postgres_changes',{event:'*',schema:'public',table:'part_steps'},changed).on('postgres_changes',{event:'*',schema:'public',table:'bom_revisions',filter:`job_id=eq.${job.id}`},changed).subscribe();return()=>{alive=false;clearTimeout(timer);client.removeChannel(channel);};},[client,job.id,profile.id,reload]);
  useEffect(()=>{
   let current=true;

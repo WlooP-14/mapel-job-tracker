@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {businessDate,stageIsLate} from '../lib/scheduling';
 import {paged} from '../lib/planning';
+import {saveOrQueue,syncCompleteEvent} from '../lib/offline-sync';
 import {Button,Field,inputClass,StatusPill,SelectionShortcut} from './ui';
 import {Section,StateBox} from './Shell';
 export default function WorkBatches({client,profile,job,t,parts,batches,vendors,blocked,onUpdated}){
@@ -11,6 +12,7 @@ export default function WorkBatches({client,profile,job,t,parts,batches,vendors,
  const canEdit=['developer','admin','operator'].includes(profile.role)&&['active','on_hold'].includes(job.status)&&!historyError;
  const steps=parts.flatMap(part=>part.part_steps.filter(s=>s.batch_id&&s.step_name!=='Received'&&s.status!=='NOT APPLICABLE').map(s=>({...s,part}))),picked=steps.filter(s=>selected.includes(s.id));
  const load=useCallback(async()=>{const v=++version.current;try{const rows=await paged(()=>client.from('stage_returns').select('*,part_steps!inner(bom_items!inner(job_id))').eq('part_steps.bom_items.job_id',job.id).order('created_at',{ascending:false}).order('id'));const ids=[...new Set(rows.map(e=>e.created_by).filter(Boolean))],actors=ids.length?await client.rpc('team_actor_names',{p_ids:ids}):{data:[]};if(actors.error)throw actors.error;if(v===version.current){setEvents(rows);setNames(Object.fromEntries(actors.data.map(a=>[a.id,a.name])));setHistoryError(false)}}catch{if(v===version.current)setHistoryError(true)}finally{if(v===version.current)setHistoryLoading(false)}},[client,job.id]);
+ useEffect(()=>{window.addEventListener(syncCompleteEvent,load);window.addEventListener('online',load);return()=>{window.removeEventListener(syncCompleteEvent,load);window.removeEventListener('online',load);};},[load]);
  useEffect(()=>{load();let timer;const channel=client.channel('work-returns:'+job.id+':'+profile.id).on('postgres_changes',{event:'*',schema:'public',table:'stage_returns'},()=>{clearTimeout(timer);timer=setTimeout(load,200)}).subscribe();return()=>{version.current++;clearTimeout(timer);client.removeChannel(channel)}},[client,job.id,profile.id,load]);
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer)},[]);
  const waiting=s=>!s.started_on&&!['DONE','NOT APPLICABLE'].includes(s.status),previousDone=s=>s.part.part_steps.filter(prev=>prev.batch_id===s.batch_id&&prev.route_order<s.route_order).every(prev=>['DONE','NOT APPLICABLE'].includes(prev.status));
@@ -19,7 +21,7 @@ export default function WorkBatches({client,profile,job,t,parts,batches,vendors,
  function begin(kind){request.current=null;setError('');setForm({kind,day:businessDate(),note:'',quantities:Object.fromEntries(picked.map(s=>[s.id,Number(s.part.qty_required)-Number(s.qty_completed)]))})}
  function field(key,value){setForm(old=>({...old,[key]:value}));request.current=null}
  const message=e=>Object.entries(p.errors).find(([key])=>e?.message?.includes(key))?.[1]||t.invalid;
- async function submit(e){e.preventDefault();setBusy(true);setError('');try{const r=form.kind==='start'?await client.rpc('start_work_steps',{p_job:job.id,p_steps:selected,p_started:form.day}):await client.rpc('record_work_returns',{p_job:job.id,p_updates:picked.map(s=>({step_id:s.id,qty:Number(form.quantities[s.id])})),p_day:form.day,p_note:form.note,p_request:request.current??=crypto.randomUUID()});if(r.error)throw r.error;setForm(null);setSelected([]);setNotice(p.updated);await load();await onUpdated()}catch(e){setError(message(e));await load();await onUpdated()}finally{setBusy(false)}}
+ async function submit(e){e.preventDefault();setBusy(true);setError('');try{let queued=false;if(form.kind==='start'){const result=await client.rpc('start_work_steps',{p_job:job.id,p_steps:selected,p_started:form.day});if(result.error)throw result.error;}else{queued=await saveOrQueue(client,profile.id,'record_work_returns',{p_job:job.id,p_updates:picked.map(s=>({step_id:s.id,qty:Number(form.quantities[s.id])})),p_day:form.day,p_note:form.note,p_request:request.current??=crypto.randomUUID()},job.mould_code);}if(queued){setForm(null);setSelected([]);setNotice(t.offlineSync.saved);return;}setForm(null);setSelected([]);setNotice(p.updated);await load();await onUpdated()}catch(e){setError(message(e));await load();await onUpdated()}finally{setBusy(false)}}
  async function undo(event){setBusy(true);setError('');try{const r=await client.rpc('undo_work_return',{p_event:event.id});if(r.error)throw r.error;setNotice(p.undoDone);await load();await onUpdated()}catch(e){setError(message(e))}finally{setBusy(false)}}
  const disabled=busy||blocked,locale=typeof document==='undefined'?'en':document.documentElement.lang;
  const recent=events.filter(event=>canEdit&&event.qty>0&&!events.some(e=>e.undoes_id===event.id)&&new Date(event.created_at).getTime()+10000>now&&(profile.role!=='operator'||event.created_by===profile.id));

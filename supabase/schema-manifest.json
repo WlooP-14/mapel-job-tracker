@@ -88,7 +88,11 @@
     {
       "file": "20261107102614_self_registration.sql",
       "sha256": "8efdfa33fdca484656ae04748c13d6345d42fc5bf93e8351ca7ac4653cb6f594"
+    },
+    {
+      "file": "20261112075423_configurable_processes.sql",
+      "sha256": "a7ddf8fd454d5ed6d88b238b3e6f065f3601f7c6907cdd71b8ab08786a7b659c"
     }
   ],
-  "schemaSha256": "181823d3ea0f2262903c409e4639cdfdd308531a6f615d12901a19acf59c8ae6"
+  "schemaSha256": "1b9cabd37b89267d46dad7e13a2dcab5e104dc44a62204dbad49170db301206d"
 }

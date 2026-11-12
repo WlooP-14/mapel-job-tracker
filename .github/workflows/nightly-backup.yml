@@ -1,23 +1,39 @@
-name: Encrypted nightly backup
+name: Encrypted nightly and weekly backups
 on:
   schedule:
     - cron: '30 20 * * *' # 02:00 India time
+    - cron: '30 21 * * 6' # Sunday 03:00 India time
   workflow_dispatch:
+    inputs:
+      destination:
+        description: Backup destination
+        type: choice
+        options: [nightly, weekly]
+        default: nightly
 permissions:
   contents: read
 jobs:
   backup:
+    if: ${{ vars.INDEPENDENT_BACKUPS_ENABLED == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      BACKUP_KIND: ${{ (github.event.schedule == '30 21 * * 6' || inputs.destination == 'weekly') && 'weekly' || 'nightly' }}
     steps:
       - uses: actions/checkout@v4
       - name: Install encryption tools
         run: sudo apt-get update && sudo apt-get install -y gnupg
-      - name: Create encrypted backup and upload
+      - name: Encrypt and upload database and attachments
         env:
           BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
-          BACKUP_S3_BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
           BACKUP_GPG_PUBLIC_KEY: ${{ secrets.BACKUP_GPG_PUBLIC_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.BACKUP_AWS_REGION }}
+          SOURCE_S3_ENDPOINT: ${{ secrets.BACKUP_SOURCE_S3_ENDPOINT }}
+          SOURCE_S3_KEY_ID: ${{ secrets.BACKUP_SOURCE_S3_KEY_ID }}
+          SOURCE_S3_SECRET: ${{ secrets.BACKUP_SOURCE_S3_SECRET }}
+          SOURCE_S3_REGION: ${{ secrets.BACKUP_SOURCE_S3_REGION }}
+          BACKUP_S3_BUCKET: ${{ env.BACKUP_KIND == 'weekly' && secrets.WEEKLY_BACKUP_S3_BUCKET || secrets.BACKUP_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ env.BACKUP_KIND == 'weekly' && secrets.WEEKLY_BACKUP_AWS_ACCESS_KEY_ID || secrets.BACKUP_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ env.BACKUP_KIND == 'weekly' && secrets.WEEKLY_BACKUP_AWS_SECRET_ACCESS_KEY || secrets.BACKUP_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ env.BACKUP_KIND == 'weekly' && secrets.WEEKLY_BACKUP_AWS_REGION || secrets.BACKUP_AWS_REGION }}
+          WEEKLY_CONFIGURED: ${{ secrets.WEEKLY_BACKUP_S3_BUCKET != '' && secrets.WEEKLY_BACKUP_AWS_ACCESS_KEY_ID != '' && secrets.WEEKLY_BACKUP_AWS_SECRET_ACCESS_KEY != '' && secrets.WEEKLY_BACKUP_AWS_REGION != '' }}
         run: bash scripts/nightly-backup.sh

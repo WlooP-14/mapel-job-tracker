@@ -47,9 +47,11 @@ The externally isolated backup destination and restore drill remain unconfigured
 
 ## Remaining work and external dependencies
 
+- Local process-management changes add optional Nitriding and Settings controls for admin/developer/operator process creation, duration, sequence and default selection. Allotments can choose their own subset and per-process vendors. The local configurable-processes migration must be applied when this release is deployed. Existing assigned routes retain their saved process names, durations and order.
+
 - Independent encrypted backups, Storage-byte backups, destination retention and a successful restore drill require the separate storage destination and credentials; no backup is active.
 - Automatic image/PDF BOM reading is unconfigured. Manual attached-original transcription and direct Excel import work without AI charges.
-- General offline write queuing/conflict review is not implemented. BOM review drafts survive reload locally.
+- Local changes add the Mapel install icons, user-separated cached reads, and durable queues for receipts, work returns and allotments. Pending operations keep their retry identifiers and rejected operations require review. Sync runs while the same user has the app open and online. Other writes still require a connection. Physical airplane-mode acceptance testing is pending.
 - Print/save-PDF controls exist, but PDF output and physical-device/PWA installation still need acceptance checks.
 - Mould box labels and scan confirmation are implemented. A live mould was found by code in the browser and a three-label sheet rendered. Automated QR generation and decoding passed. Camera and print/PDF still need a physical-device and label-paper check.
 - Developer kill-switch UI remains outside the implemented screen sequence. Its fetched Stitch design is a reference.
