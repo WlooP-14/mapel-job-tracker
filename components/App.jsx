@@ -39,7 +39,7 @@ export default function App(){
  else if(profile===false)content=<StateBox title={t.noAccess} action={<Button onClick={logout}>{t.logout}</Button>}/>;
  else if(!profile)content=<StateBox title={t.loading}/>;
  else if(page==='settings')content=<Settings client={client} profile={profile} t={t} language={lang} onLanguage={changeLang} appearance={appearance} onTour={()=>setTour(0)} onLogout={logout}/>;
- else if(page==='help')content=<Help t={t} onTour={()=>setTour(0)}/>;
+ else if(page==='help')content=<Help t={t} onTour={()=>setTour(0)} onNavigate={navigate}/>;
  else if(page==='vendors')content=<Vendors client={client} profile={profile} t={t}/>;
  else if(page==='alerts')content=<Alerts client={client} t={t}/>;
  else content=<MouldWorkspace onDetailChange={setMouldOpen} key={page} client={client} profile={profile} t={t} view={page}/>;
