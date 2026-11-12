@@ -20,6 +20,7 @@ test('self-registration creates an inactive viewer and only an authorized user c
    finally{await db.exec('reset role');}
   }
   assert.equal((await as(applicant,'select app_private.current_app_role() as role')).rows[0].role,null);
+  assert.deepEqual((await as(admin,"select name,role,active from public.users where id=$1 and archived_at is null",[applicant])).rows,[{name:'Test Applicant',role:'viewer',active:false}]);
   assert.equal((await as(applicant,"update public.users set role='admin' where id=$1 returning id",[applicant])).rows.length,0);
   await assert.rejects(as(admin,"update public.users set role='developer' where id=$1",[applicant]),/row-level security/);
   assert.equal((await as(admin,"update public.users set role='admin', active=true where id=$1 returning role",[applicant])).rows[0].role,'admin');

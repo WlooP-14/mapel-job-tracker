@@ -1,5 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 import {isTeamPin,teamPinPassword} from '../../../lib/pin-auth';
+import {ensureRegistrationProfile} from '../../../lib/self-registration';
 
 export const runtime='nodejs';
 const reply=(status)=>Response.json({}, {status,headers:{'Cache-Control':'no-store'}});
@@ -21,11 +22,14 @@ export async function POST(request){
   if(name.length>160||!/^\S+\s+\S/u.test(name)||!/^\+91\d{10}$/.test(body.phone)||!isTeamPin(body.pin))return reply(400);
 
   const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
-  const {error}=await client.auth.admin.createUser({
+  const {data,error}=await client.auth.admin.createUser({
    phone:body.phone,phone_confirm:true,password:teamPinPassword(body.pin),
    app_metadata:{mjt_self_registration:true},user_metadata:{full_name:name}
   });
   if(error)return reply(error.status===429?429:['phone_exists','user_already_exists'].includes(error.code)?409:503);
+  // Keep registration usable if the hosted database has not received the Auth trigger yet.
+  // An existing trigger-created or approved profile is preserved unchanged.
+  await ensureRegistrationProfile(client,data.user);
   return reply(201);
  }catch(error){return reply(error instanceof SyntaxError?400:503);}
 }
