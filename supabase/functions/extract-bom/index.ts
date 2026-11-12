@@ -1,6 +1,7 @@
 // Deploy with GEMINI_API_KEY and BOM_GEMINI_MODEL set as Edge Function secrets.
 // This returns untrusted draft JSON only; it never writes BOM rows.
 import {extractBom} from '../_shared/extract-bom.js';
+import {geminiBom} from '../_shared/gemini-bom.js';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
 Deno.serve(async (req) => {
@@ -19,10 +20,7 @@ Deno.serve(async (req) => {
     const providers: Record<string, (image: string, mimeType: string) => Promise<unknown>> = {
       gemini: async (data, type) => {
         const key = Deno.env.get('GEMINI_API_KEY'); const model = Deno.env.get('BOM_GEMINI_MODEL');
-        if (!key || !model || !/^[a-zA-Z0-9._-]+$/.test(model)) throw new Error('Provider not configured');
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, { method:'POST', headers:{'content-type':'application/json','x-goog-api-key':key}, body:JSON.stringify({contents:[{parts:[{text:'Read this mould BOM as JSON. Preserve section order and original text. Sections: Mould Base, Child Part, Turn Part, Hardware. Columns: No, NAME, FINISH SIZE, ROUGH SIZE, MATERIAL, QTY; hardware: No, NAME, SIZE, QTY, REMARK. Include mould code, name, sign-off fields and uncertain cells. Do not invent values.'},{inline_data:{mime_type:type,data}}]}],generationConfig:{responseMimeType:'application/json'}}) });
-        if (!response.ok) throw new Error('Provider request failed');
-        const result = await response.json(); return JSON.parse(result.candidates[0].content.parts[0].text);
+        return geminiBom({image:data,mimeType:type},{key,model});
       }
     };
     const draft = await extractBom(image, {provider:String(setting?.value), adapters: Object.fromEntries(Object.entries(providers).map(([key,adapter])=>[key,(data: string)=>adapter(data,mimeType)]))});

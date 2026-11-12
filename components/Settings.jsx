@@ -8,6 +8,7 @@ import {Section,LanguageSwitch,Icon,StateBox} from './Shell';
 import {Button,Field,inputClass} from './ui';
 import PlanningSettings from './PlanningSettings';
 import ProcessSettings from './ProcessSettings';
+import ExtractionSettings from './ExtractionSettings';
 function Counter({value,onChange,busy,label,t}){return <div className="counter" aria-label={label}><button type="button" disabled={busy||value===0} onClick={()=>onChange(Math.max(0,(value??1)-1))} aria-label={t.shell.remove+' '+label}>−</button><output className="plain-badge" aria-live="polite">{value??t.workflow.notSet}</output><button type="button" disabled={busy||value>=365} onClick={()=>onChange((value??0)+1)} aria-label={t.shell.add+' '+label}>+</button></div>;}
 export default function Settings({client,profile,t,language,onLanguage,onTour,onLogout}){
  const developer=profile.role==='developer';
@@ -36,6 +37,7 @@ export default function Settings({client,profile,t,language,onLanguage,onTour,on
  {['developer','admin','operator'].includes(profile.role)&&<ProcessSettings client={client} t={t} onSaved={load}/>}
  {canManage&&(loading?<StateBox title={t.loading}/>:loadError?<StateBox title={loadError} error action={<Button onClick={load}>{h.retry}</Button>}/>:<>
  <PlanningSettings client={client} t={t}/>
+ <ExtractionSettings client={client} t={t}/>
 
  <Section title={t.stageDays} hint={h.stageHint} icon="clock" action={<span className="plain-badge">{h.adminOnly}</span>}>{data.stages.filter(s=>s.category!=='hardware'&&s.step_name!=='Received').length?data.stages.filter(s=>s.category!=='hardware'&&s.step_name!=='Received').map(s=><div className="settings-row settings-action" key={s.id}><div><strong>{t.stageNames[s.step_name]||s.step_name}</strong><p className="muted">{t.tabs[['base','child','turn'].indexOf(s.category)]}</p></div><Counter value={s.default_days} busy={busy} label={t.stageNames[s.step_name]||s.step_name} onChange={value=>update('step_templates',s.id,{default_days:value})} t={t}/></div>):<p>{h.emptyStages}</p>}</Section>
  <Section title={h.alerts} hint={h.alertsSetting} icon="bell"><div className="settings-action"><span>{h.workingDays}</span><Counter value={data.window} busy={busy} label={h.alerts} onChange={value=>act(()=>client.from('settings').upsert({key:'alert_working_days',value,archived_at:null}))} t={t}/></div></Section>

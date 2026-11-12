@@ -4,6 +4,10 @@
 
 See [the one-time database deployment setup](docs/DATABASE_DEPLOYMENT.md). Store the project's Session pooler connection as the GitHub Actions secret `SUPABASE_DB_URL`. The database migration workflow can then deploy pending migrations without a personal Supabase access token. Activation is pending until that secret is saved and a successful run is verified.
 
+## Gemini BOM reading
+
+Regular Gemini 3 Flash can extract draft parts from saved photos and PDFs for review. Excel continues to import locally. See [Gemini setup and verification](docs/GEMINI_BOM.md) for server environment variables and hosted activation. The private key is configured locally; Vercel still needs its server environment configured.
+
 ## Docker hosting
 
 With Docker and the Compose plugin installed, run `docker compose --env-file .env.local up --build -d` from the project folder. The app is available at `http://localhost:3000`. On a fresh host, copy `.env.example` to `.env.local` and fill in the Supabase project URL and publishable key first. Set `APP_PORT` in `.env.local` if port 3000 is already in use.
@@ -29,7 +33,7 @@ Backup activation is deferred until the developer supplies an external hard driv
 ## Scope and decisions
 The existing app follows fetched Stitch references, with the final plan taking precedence. Login, navigation, Help/tour, Settings, mould list/create/detail, four BOM categories, Excel review, Receiving, bulk Planning/allotment, in-house/vendor work and Assembly/Trials are connected to Supabase. Live QA covers partial receipts/returns, corrections, private evidence, Finish and Reopen. The nightly stage-alert checker runs in Supabase at 01:00 India time; its schedule and a manual execution are verified, while the first scheduled run has not yet occurred. See [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) for evidence and remaining gaps. The production build and 28 tests pass.
 
-The PWA has an install manifest and a cached navigation shell. Local BOM drafts and user-separated read caching are implemented. Previously opened moulds, Receiving and Planning pages can be read offline. New receipts, work returns and allotments are queued on the device with their original request identifiers and sync under the same user when the app is online. Rejected changes stay in a review list. Receipt corrections, Undo, hardware verification, work starts, trials and Settings changes still require a connection. Keep the app open on reconnect to finish syncing. Automatic photo/PDF extraction is unconfigured; manual transcription can retain the original file without AI charges. External backups and a restore drill are not active. No purchasing or gate-pass features are included.
+The PWA has an install manifest and a cached navigation shell. Local BOM drafts and user-separated read caching are implemented. Previously opened moulds, Receiving and Planning pages can be read offline. New receipts, work returns and allotments are queued on the device with their original request identifiers and sync under the same user when the app is online. Rejected changes stay in a review list. Receipt corrections, Undo, hardware verification, work starts, trials and Settings changes still require a connection. Keep the app open on reconnect to finish syncing. Gemini photo/PDF extraction is configured locally and awaits hosted server environment values; manual entry remains available. External backups and a restore drill are not active. No purchasing or gate-pass features are included.
 
 An example uploader identity policy is in `infra/backup-uploader-policy.json`; replace the bucket placeholder. Attach it only to a dedicated identity in the backup account. Object Lock and retention are destination-side settings managed by a separate administrator. The application must have no credentials for that account. The example is not a substitute for bucket-policy review and a restore drill.
 
