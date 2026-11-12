@@ -1,0 +1,41 @@
+name: Deploy database migrations
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'scripts/deploy-database.mjs'
+      - '.github/workflows/database-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Apply pending migrations (leave off for preview)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: mapel-production-database
+  cancel-in-progress: false
+jobs:
+  migrate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Preview pending migrations
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/deploy-database.mjs
+      - name: Apply pending migrations
+        if: github.event_name == 'push' || inputs.apply
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/deploy-database.mjs --apply

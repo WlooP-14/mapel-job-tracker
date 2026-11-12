@@ -1,5 +1,9 @@
 # Mould Job Tracker
 
+## Automatic database deployment
+
+See [the one-time database deployment setup](docs/DATABASE_DEPLOYMENT.md). Store the project's Session pooler connection as the GitHub Actions secret `SUPABASE_DB_URL`. The database migration workflow can then deploy pending migrations without a personal Supabase access token. Activation is pending until that secret is saved and a successful run is verified.
+
 ## Docker hosting
 
 With Docker and the Compose plugin installed, run `docker compose --env-file .env.local up --build -d` from the project folder. The app is available at `http://localhost:3000`. On a fresh host, copy `.env.example` to `.env.local` and fill in the Supabase project URL and publishable key first. Set `APP_PORT` in `.env.local` if port 3000 is already in use.
