@@ -8,6 +8,10 @@ See [the one-time database deployment setup](docs/DATABASE_DEPLOYMENT.md). Store
 
 Regular Gemini 3 Flash can extract draft parts from saved photos and PDFs for review. Excel continues to import locally. See [Gemini setup and verification](docs/GEMINI_BOM.md) for server environment variables and hosted activation. The private key is configured locally; Vercel still needs its server environment configured.
 
+## Personal appearance
+
+Every signed-in user can select Light, Dark or System under Settings → Appearance. Light is the default. The choice is stored in that user's Supabase Auth metadata and cached separately for each account on the device. Offline changes apply immediately and retry account sync on reconnect. System follows device appearance changes while the app is open. Printouts stay light, and source documents and QR codes retain their original colours.
+
 ## Docker hosting
 
 With Docker and the Compose plugin installed, run `docker compose --env-file .env.local up --build -d` from the project folder. The app is available at `http://localhost:3000`. On a fresh host, copy `.env.example` to `.env.local` and fill in the Supabase project URL and publishable key first. Set `APP_PORT` in `.env.local` if port 3000 is already in use.

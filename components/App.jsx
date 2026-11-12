@@ -14,12 +14,14 @@ import {authStorage} from '../lib/pin-auth';
 import RequiredUpdate from './RequiredUpdate';
 import OfflineSync from './OfflineSync';
 import {offlineFetch} from '../lib/offline-reads';
+import useAppearance from './useAppearance';
 export default function App(){
  const [lang,setLang]=useState('en'),[tour,setTour]=useState(-1),[page,setPage]=useState('dashboard'),[session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true),[profile,setProfile]=useState(null),[profileError,setProfileError]=useState(false),[notice,setNotice]=useState(''),[offline,setOffline]=useState(false);
  const [mouldOpen,setMouldOpen]=useState(false);
  useEffect(()=>{window.scrollTo(0,0)},[page,profile?.id]);
  const languageVersion=useRef(0),verifiedProfile=useRef(null);const t=messages[lang];
  const [client]=useState(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key,{auth:{storage:authStorage},global:{fetch:offlineFetch(url)}}):null;});
+ const appearance=useAppearance(client,session);
  useEffect(()=>{document.documentElement.lang=lang;},[lang]);
  useEffect(()=>{const value=localStorage.getItem('mjt-language');if(messages[value])setLang(value);if('serviceWorker'in navigator){if(['localhost','127.0.0.1'].includes(location.hostname)){navigator.serviceWorker.getRegistrations().then(registrations=>Promise.all(registrations.filter(r=>r.active?.scriptURL.endsWith('/sw.js')).map(r=>r.unregister()))).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('mould-shell-')).map(k=>caches.delete(k)))).catch(()=>{});}else navigator.serviceWorker.register('/sw.js').catch(()=>{});}const update=()=>setOffline(!navigator.onLine);update();window.addEventListener('online',update);window.addEventListener('offline',update);return()=>{window.removeEventListener('online',update);window.removeEventListener('offline',update);}},[]);
  useEffect(()=>{if(!client){setAuthLoading(false);return;}let active=true;client.auth.getSession().then(({data,error})=>{if(active){setSession(error?null:data.session);setAuthLoading(false);}}).catch(()=>{if(active)setAuthLoading(false)});const {data:{subscription}}=client.auth.onAuthStateChange((_event,s)=>{setSession(s);setAuthLoading(false);});return()=>{active=false;subscription.unsubscribe();};},[client]);
@@ -36,7 +38,7 @@ export default function App(){
  else if(profileError)content=<StateBox title={t.shell.profileLoadError} action={<div className="flex gap-3"><Button onClick={loadProfile}>{t.shell.retry}</Button><Button onClick={logout}>{t.logout}</Button></div>} error/>;
  else if(profile===false)content=<StateBox title={t.noAccess} action={<Button onClick={logout}>{t.logout}</Button>}/>;
  else if(!profile)content=<StateBox title={t.loading}/>;
- else if(page==='settings')content=<Settings client={client} profile={profile} t={t} language={lang} onLanguage={changeLang} onTour={()=>setTour(0)} onLogout={logout}/>;
+ else if(page==='settings')content=<Settings client={client} profile={profile} t={t} language={lang} onLanguage={changeLang} appearance={appearance} onTour={()=>setTour(0)} onLogout={logout}/>;
  else if(page==='help')content=<Help t={t} onTour={()=>setTour(0)}/>;
  else if(page==='vendors')content=<Vendors client={client} profile={profile} t={t}/>;
  else if(page==='alerts')content=<Alerts client={client} t={t}/>;
