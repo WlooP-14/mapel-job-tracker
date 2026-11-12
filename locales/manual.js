@@ -1,6 +1,6 @@
 export const manualMessages={
  en:{
-  introTitle:'One app for the whole team',
+  introTitle:'ALL-FOR-ONE...!!!',
   intro:['Mould Job Tracker is an all-in-one workspace for everyone working on a mould. Receiving, planning, operators and admins use one shared record instead of separate lists. Each person signs in with their own account, and the whole team can see the saved progress they have permission to view.','Start when raw material reaches the company. Add the mould and its BOMs, record receiving, allot work, follow each process, and finish after assembly and trials. Purchasing and gate passes are outside this app.','Enter what actually happened. A plan is not proof that work started, and a file attachment is not yet a list of planned parts. The steps below show how to move from one stage to the next.'],
   contents:'Find the step you need',flowTitle:'The flow of work',flow:['Material arrives','Create mould','Save both BOMs','Review and save parts','Record receiving','Plan and allot','Track work and returns','Assembly and trials','Finish mould'],
   chapters:{
