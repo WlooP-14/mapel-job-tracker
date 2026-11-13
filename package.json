@@ -11,9 +11,12 @@
     "schema:build": "node scripts/build-schema.mjs"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^14.0.0",
+    "@simplewebauthn/server": "^14.1.0",
     "@supabase/supabase-js": "^2.49.0",
     "jsqr": "1.4.0",
     "next": "^16.4.4",
+    "nodemailer": "^10.5.0",
     "qrcode": "1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

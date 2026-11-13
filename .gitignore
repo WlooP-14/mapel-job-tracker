@@ -9,3 +9,5 @@ coverage
 design/stitch/
 # Local UI evidence can contain account information; retain it on this computer.
 docs/qa/
+infra/*.local.sql
+infra/*.local.pem

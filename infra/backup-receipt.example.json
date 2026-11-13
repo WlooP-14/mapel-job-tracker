@@ -1,0 +1,10 @@
+{
+ "id":"replace-with-backup-id",
+ "projectRef":"emrjfelkxbegkvyxszba",
+ "completedAt":"",
+ "restoreTestedAt":"",
+ "independent":true,
+ "appCanDelete":false,
+ "workerCanDelete":false,
+ "includes":["database","auth","storage"]
+}

@@ -22,6 +22,9 @@ export async function POST(request){
   if(name.length>160||!/^\S+\s+\S/u.test(name)||!/^\+91\d{10}$/.test(body.phone)||!isTeamPin(body.pin))return reply(400);
 
   const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+  const security=await client.rpc('system_security_status');
+  if(security.error&&security.error.code!=='PGRST202')return reply(503);
+  if(security.data?.frozen||security.data?.wiping||security.data?.wipedAt)return reply(403);
   const {data,error}=await client.auth.admin.createUser({
    phone:body.phone,phone_confirm:true,password:teamPinPassword(body.pin),
    app_metadata:{mjt_self_registration:true},user_metadata:{full_name:name}

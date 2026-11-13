@@ -96,7 +96,11 @@
     {
       "file": "20261112160000_admin_data_management.sql",
       "sha256": "1dbc3fd929db9dac58c328d7d38b49d3a48a16534721b16d5ff21867e1a6d0fd"
+    },
+    {
+      "file": "20261113090000_developer_security.sql",
+      "sha256": "0f71ef7bdaeb8ed006cf78bf2b424bf1dc5da4f10f81f826b89f22ff0b2286e9"
     }
   ],
-  "schemaSha256": "7209c5ac9e872fc4857fe8d58255b07dc5fb601311bd56cc628e927de9561ad1"
+  "schemaSha256": "73209348d37fa106b969bb45f9becc4b897efecd8501398b9fe9ba5bd4ff0f60"
 }

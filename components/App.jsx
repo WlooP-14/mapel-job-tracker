@@ -15,6 +15,8 @@ import RequiredUpdate from './RequiredUpdate';
 import OfflineSync from './OfflineSync';
 import {offlineFetch} from '../lib/offline-reads';
 import useAppearance from './useAppearance';
+import DeveloperPanel from './DeveloperPanel';
+import {clearLocalDrafts} from '../lib/drafts';
 export default function App(){
  const [lang,setLang]=useState('en'),[tour,setTour]=useState(-1),[page,setPage]=useState('dashboard'),[session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true),[profile,setProfile]=useState(null),[profileError,setProfileError]=useState(false),[notice,setNotice]=useState(''),[offline,setOffline]=useState(false);
  const [mouldOpen,setMouldOpen]=useState(false);
@@ -22,6 +24,15 @@ export default function App(){
  const languageVersion=useRef(0),verifiedProfile=useRef(null);const t=messages[lang];
  const [client]=useState(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;return url&&key?createClient(url,key,{auth:{storage:authStorage},global:{fetch:offlineFetch(url)}}):null;});
  const appearance=useAppearance(client,session);
+ const [security,setSecurity]=useState({frozen:false,wipedAt:null,wiping:false});
+ useEffect(()=>{
+  let active=true;
+  const remembered=localStorage.getItem('mjt-system-wiped-at');if(remembered)setSecurity(previous=>({...previous,wipedAt:remembered}));
+  const update=async()=>{try{const r=await fetch('/api/system-status',{cache:'no-store'});if(!r.ok)return;const value=await r.json();if(active){setSecurity(value);if(value.wipedAt)localStorage.setItem('mjt-system-wiped-at',value.wipedAt);else localStorage.removeItem('mjt-system-wiped-at');}}catch{}};
+  update();const timer=setInterval(update,15000);window.addEventListener('online',update);
+  return()=>{active=false;clearInterval(timer);window.removeEventListener('online',update)};
+ },[]);
+ useEffect(()=>{if(!security.wipedAt)return;clearLocalDrafts().catch(()=>{});const url=process.env.NEXT_PUBLIC_SUPABASE_URL;if(url){const project=new URL(url).hostname.split('.')[0];authStorage.removeItem('sb-'+project+'-auth-token');}setProfile(null);setSession(null);},[security.wipedAt]);
  useEffect(()=>{document.documentElement.lang=lang;},[lang]);
  useEffect(()=>{const value=localStorage.getItem('mjt-language');if(messages[value])setLang(value);if('serviceWorker'in navigator){if(['localhost','127.0.0.1'].includes(location.hostname)){navigator.serviceWorker.getRegistrations().then(registrations=>Promise.all(registrations.filter(r=>r.active?.scriptURL.endsWith('/sw.js')).map(r=>r.unregister()))).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('mould-shell-')).map(k=>caches.delete(k)))).catch(()=>{});}else navigator.serviceWorker.register('/sw.js').catch(()=>{});}const update=()=>setOffline(!navigator.onLine);update();window.addEventListener('online',update);window.addEventListener('offline',update);return()=>{window.removeEventListener('online',update);window.removeEventListener('offline',update);}},[]);
  useEffect(()=>{if(!client){setAuthLoading(false);return;}let active=true;client.auth.getSession().then(({data,error})=>{if(active){setSession(error?null:data.session);setAuthLoading(false);}}).catch(()=>{if(active)setAuthLoading(false)});const {data:{subscription}}=client.auth.onAuthStateChange((_event,s)=>{setSession(s);setAuthLoading(false);});return()=>{active=false;subscription.unsubscribe();};},[client]);
@@ -33,15 +44,19 @@ export default function App(){
  function navigate(key){setPage(key);setNotice('');if(['dashboard','moulds'].includes(key)){const url=new URL(location.href);url.searchParams.delete('mould');history.pushState(null,'',url);}}
  async function logout(){try{const {error}=await client.auth.signOut();if(error)throw error;setProfile(null);setPage('dashboard');setTour(-1);}catch{setNotice(t.invalid);}}
  const signedIn=Boolean(session&&profile);let content;
- if(authLoading)content=<StateBox title={t.loading}/>;
+ if(security.wipedAt)content=<StateBox title={t.developer.wiped}/>;
+ else if(security.wiping)content=<StateBox title={t.developer.wiping}/>;
+ else if(security.frozen&&session&&profile?.role!=='developer')content=<StateBox title={t.developer.frozen} action={<Button onClick={logout}>{t.logout}</Button>}/>;
+ else if(authLoading)content=<StateBox title={t.loading}/>;
  else if(!session)content=<Login client={client} t={t}/>;
  else if(profileError)content=<StateBox title={t.shell.profileLoadError} action={<div className="flex gap-3"><Button onClick={loadProfile}>{t.shell.retry}</Button><Button onClick={logout}>{t.logout}</Button></div>} error/>;
- else if(profile===false)content=<StateBox title={t.noAccess} action={<Button onClick={logout}>{t.logout}</Button>}/>;
+ else if(profile===false)content=<StateBox title={security.frozen?t.developer.frozen:t.noAccess} action={<Button onClick={logout}>{t.logout}</Button>}/>;
  else if(!profile)content=<StateBox title={t.loading}/>;
  else if(page==='settings')content=<Settings client={client} profile={profile} t={t} language={lang} onLanguage={changeLang} appearance={appearance} onTour={()=>setTour(0)} onLogout={logout}/>;
  else if(page==='help')content=<Help t={t} onTour={()=>setTour(0)} onNavigate={navigate}/>;
+ else if(page==='developer'&&profile.role==='developer')content=<DeveloperPanel client={client} profile={profile} t={t} onBack={()=>navigate('dashboard')} onSettings={()=>navigate('settings')}/>;
  else if(page==='vendors')content=<Vendors client={client} profile={profile} t={t}/>;
  else if(page==='alerts')content=<Alerts client={client} t={t}/>;
  else content=<MouldWorkspace onDetailChange={setMouldOpen} key={page} client={client} profile={profile} t={t} view={page}/>;
- return <div className="app-shell"><AppHeader t={t} language={lang} onLanguage={changeLang} onNavigate={navigate} signedIn={signedIn}/>{(offline||notice)&&<p role="status" className="app-notice">{offline?t.shell.offline:notice}</p>}<main className="app-content">{signedIn&&<OfflineSync key={profile.id} client={client} userId={profile.id} t={t}/>}{content}</main>{signedIn&&tour>=0&&<Tour step={tour} t={t} onClose={endTour} onBack={()=>setTour(s=>Math.max(0,s-1))} onNext={()=>tour===t.shell.tourSteps.length-1?endTour():setTour(s=>s+1)}/>} {signedIn&&<BottomNav page={mouldOpen?'moulds':page} onNavigate={navigate} t={t}/>}<RequiredUpdate t={t}/></div>;
+ return <div className="app-shell"><AppHeader t={t} language={lang} onLanguage={changeLang} onNavigate={navigate} signedIn={signedIn&&!security.wiping&&!security.wipedAt&&(!security.frozen||profile.role==='developer')} isDeveloper={profile?.role==='developer'}/>{(offline||notice)&&<p role="status" className="app-notice">{offline?t.shell.offline:notice}</p>}<main className="app-content">{signedIn&&!security.wiping&&!security.wipedAt&&(!security.frozen||profile.role==='developer')&&<OfflineSync key={profile.id} client={client} userId={profile.id} t={t}/>}{content}</main>{signedIn&&!security.wiping&&!security.wipedAt&&(!security.frozen||profile.role==='developer')&&tour>=0&&<Tour step={tour} t={t} onClose={endTour} onBack={()=>setTour(s=>Math.max(0,s-1))} onNext={()=>tour===t.shell.tourSteps.length-1?endTour():setTour(s=>s+1)}/>} {signedIn&&!security.wiping&&!security.wipedAt&&(!security.frozen||profile.role==='developer')&&<BottomNav page={mouldOpen?'moulds':page} onNavigate={navigate} t={t}/>}<RequiredUpdate t={t}/></div>;
 }
