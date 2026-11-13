@@ -6,6 +6,8 @@ Implemented November 13, 2026. The panel is available only to an active develope
 
 ## Install the database update
 
+When the panel reports that the update is not installed, it offers **Download SQL update** and **Open Supabase SQL Editor**. Download the file, open it in a text editor, paste the complete contents into a new query in the existing project and run it once. This single download installs the pending migration and records its history in one transaction, preserving existing data and leaving live wiping off. Return to the app and tap Refresh. Downloading requires the existing active developer login; it does not require the new security tables and cannot be used by other roles. A failed load displays recovery instructions instead of a permanent waiting message.
+
 Open the local file `supabase/migrations/20261113090000_developer_security.sql`, copy its entire contents into a **new query** in the existing Supabase project's SQL Editor, and run it once. Local files do not appear automatically in SQL Editor. This is an additive migration; it preserves existing moulds, people, audit records and files.
 
 Do not run the consolidated `supabase/schema.sql` on this existing project. If the versioned migration was applied manually, run `supabase/register_manual_developer_security.sql` afterward to record its history. The two earlier admin migrations have their separate registration script.

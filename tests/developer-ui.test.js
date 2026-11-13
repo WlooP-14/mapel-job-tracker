@@ -19,3 +19,16 @@ test('confirmed wipe cleanup removes all accounts cached reads and queued offlin
  await saveDraft('reads:alice',[{secret:'cached row'}]);await saveDraft('queue:bob',[{id:'unsynced'}]);
  await clearLocalDrafts();assert.equal(await loadDraft('reads:alice'),undefined);assert.equal(await loadDraft('queue:bob'),undefined);
 });
+
+test('failed security loading shows recovery steps without an indefinite waiting message in every language',async()=>{
+ const {default:LoadState}=await componentModule('components/DeveloperLoadState.jsx');
+ for(const t of Object.values(messages)){
+  for(const errorCode of ['SECURITY_NOT_CONFIGURED','SECURITY_FAILED']){
+   const html=renderToStaticMarkup(React.createElement(LoadState,{t,errorCode,sqlEditorUrl:'https://supabase.com/dashboard/project/test/sql/new'}));
+   assert.ok(!html.includes(t.loading));assert.ok(html.includes(t.developer.errors[errorCode]));
+   assert.equal(html.includes(t.developer.setupDownload),errorCode==='SECURITY_NOT_CONFIGURED');
+   if(errorCode==='SECURITY_NOT_CONFIGURED')for(const step of t.developer.setupSteps)assert.ok(html.includes(step));
+  }
+  assert.ok(renderToStaticMarkup(React.createElement(LoadState,{t})).includes(t.loading));
+ }
+});

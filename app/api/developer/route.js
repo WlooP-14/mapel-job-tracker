@@ -1,4 +1,5 @@
 import {developerIdentity,securityClients,securityOp,readiness,trustedRp,freshAal2,sessionClaims,registrationOptions,authenticationOptions,verifyDeviceRegistration,verifyDeviceAuthentication,verifyBackupReceipt,newTicketSecret,hash} from '../../../lib/developer-security';
+import {developerSetupSql} from '../../../lib/developer-setup';
 export const runtime='nodejs';
 const reply=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 async function limitedJson(request){
@@ -11,6 +12,7 @@ export async function GET(request){
  try{
   const rp=trustedRp(request.url);
   const clients=securityClients(),id=await developerIdentity(request,clients);
+  if(new URL(request.url).searchParams.get('view')==='setup')return reply({sql:await developerSetupSql()});
   if(new URL(request.url).searchParams.get('view')==='audit'){
    const r=await clients.service.from('audit_log').select('*').order('at',{ascending:false}).limit(20);
    if(r.error)throw Error('SECURITY_FAILED');return reply({rows:r.data});

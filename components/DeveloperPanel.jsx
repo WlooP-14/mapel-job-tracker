@@ -3,18 +3,23 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {startRegistration,startAuthentication} from '@simplewebauthn/browser';
 import {Button,Field,inputClass} from './ui';
 import {Icon,Section,StateBox} from './Shell';
+import DeveloperLoadState from './DeveloperLoadState';
+import {downloadBlob} from '../lib/export';
 
 export default function DeveloperPanel({client,profile,t,onBack,onSettings}){
  const d=t.developer;
+ const [loadError,setLoadError]=useState('');
+ const projectRef=process.env.NEXT_PUBLIC_SUPABASE_URL?.match(/^https:\/\/([a-z]{20})\.supabase\.co\/?$/)?.[1];
  const [state,setState]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[factor,setFactor]=useState(''),[enrollment,setEnrollment]=useState(null),[code,setCode]=useState(''),[verified,setVerified]=useState(false),[deviceName,setDeviceName]=useState(''),[flow,setFlow]=useState(null),[delay,setDelay]=useState(false),[ticket,setTicket]=useState(null),[confirmation,setConfirmation]=useState(''),[holding,setHolding]=useState(false),[progress,setProgress]=useState(0),[audit,setAudit]=useState(null);
  const hold=useRef({version:0,timer:null,interval:null,active:false}),flowTarget=useRef(null),backupInput=useRef(null);
  const api=useCallback(async(action,data={})=>{
   const session=await client.auth.getSession();if(!session.data.session)throw Error('DEVELOPER_ONLY');
-  const r=await fetch('/api/developer'+(action==='audit'?'?view=audit':''),{method:action==='state'||action==='audit'?'GET':'POST',headers:{Authorization:'Bearer '+session.data.session.access_token,...(action==='state'||action==='audit'?{}:{'content-type':'application/json'})},...(action==='state'||action==='audit'?{}:{body:JSON.stringify({action,...data})}),cache:'no-store'});
+  const read=['state','audit','setup'].includes(action);
+  const r=await fetch('/api/developer'+(read&&action!=='state'?'?view='+action:''),{method:read?'GET':'POST',headers:{Authorization:'Bearer '+session.data.session.access_token,...(read?{}:{'content-type':'application/json'})},...(read?{}:{body:JSON.stringify({action,...data})}),cache:'no-store'});
   const result=await r.json();if(!r.ok)throw Error(result.code);return result;
  },[client]);
  const load=useCallback(async()=>{
-  try{setState(await api('state'));const factors=await client.auth.mfa.listFactors();if(!factors.error&&factors.data.totp?.[0]?.id)setFactor(factors.data.totp[0].id);}catch(failure){setError(d.errors[failure.message]||d.errors.SECURITY_FAILED)}
+  try{setState(await api('state'));setLoadError('');const factors=await client.auth.mfa.listFactors();if(!factors.error&&factors.data.totp?.[0]?.id)setFactor(factors.data.totp[0].id);}catch(failure){setState(null);setLoadError(failure.message||'SECURITY_FAILED')}
  },[api,client,d]);
  useEffect(()=>{if(profile.role!=='developer')return;load();const timer=setInterval(load,15000);return()=>clearInterval(timer)},[profile.role,load]);
  useEffect(()=>{if(flow)flowTarget.current?.scrollIntoView({behavior:'smooth',block:'start'})},[flow?.purpose,flow?.requestId]);
@@ -46,7 +51,7 @@ export default function DeveloperPanel({client,profile,t,onBack,onSettings}){
  return <section className="space-y-5">
   <Button onClick={onBack} disabled={busy||holding}><Icon name="back"/>{d.back}</Button><h2 className="page-title">{d.title}</h2><p className="muted">{d.intro}</p>
   {error&&<StateBox error title={error} action={<Button onClick={()=>{setError('');load()}}>{d.refresh}</Button>}/>} {notice&&<p role="status" className="notice">{notice}</p>}
-  {!state?<StateBox title={t.loading}/>:<>
+  {!state?<DeveloperLoadState t={t} errorCode={loadError} busy={busy} onRetry={load} sqlEditorUrl={projectRef?'https://supabase.com/dashboard/project/'+projectRef+'/sql/new':null} onDownload={()=>act(async()=>{const result=await api('setup');downloadBlob(new Blob([result.sql],{type:'text/plain;charset=utf-8'}),'mould-job-tracker-security-setup.sql');})}/>:<>
    <Section title={d.freeze} hint={d.freezeHint}><Button disabled={busy||holding} onClick={()=>act(async()=>{await api('freeze',{value:!state.frozen});setNotice(d.saved)})}>{state.frozen?d.unfreeze:d.freeze}</Button></Section>
    <Section title={d.setup}>
     <h4 className="font-bold mt-3">{d.authenticator}</h4>

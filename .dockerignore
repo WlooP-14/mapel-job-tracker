@@ -11,6 +11,10 @@
 !public/**
 !styles/
 !styles/**
+!supabase/
+!supabase/migrations/
+!supabase/migrations/20261113090000_developer_security.sql
+!supabase/register_manual_developer_security.sql
 !next.config.mjs
 !postcss.config.mjs
 !package.json
