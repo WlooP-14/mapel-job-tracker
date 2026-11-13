@@ -30,12 +30,24 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Check database connection configuration
+        id: database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No database connection secret is configured. Apply SQL manually and register its migration history; automatic database deployment is skipped."
+          fi
       - name: Preview pending migrations
+        if: steps.database.outputs.configured == 'true'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: node scripts/deploy-database.mjs
       - name: Apply pending migrations
-        if: github.event_name == 'push' || inputs.apply
+        if: steps.database.outputs.configured == 'true' && (github.event_name == 'push' || inputs.apply)
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: node scripts/deploy-database.mjs --apply

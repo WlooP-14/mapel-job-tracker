@@ -54,7 +54,8 @@ test('migrations enforce roles, history, storage and readiness in PostgreSQL', a
  await db.query('update public.users set active=false where id=$1',[ids[3]]);
  assert.equal((await asRole(3,'select * from public.jobs')).rows.length,0);
  await db.query('update public.users set active=true where id=$1',[ids[3]]);
- await asRole(2,"update public.jobs set archived_at=now() where id=$1",[job]);
+ await assert.rejects(asRole(2,"update public.jobs set archived_at=now() where id=$1",[job]),/ADMIN_ONLY/);
+ await asRole(1,"update public.jobs set archived_at=now() where id=$1",[job]);
  assert.equal((await asRole(3,'select * from storage.objects')).rows.length,0);
  } finally {await db.close();}
 });

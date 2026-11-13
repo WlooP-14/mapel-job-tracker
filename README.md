@@ -14,7 +14,7 @@ Every signed-in user can select Light, Dark or System under Settings → Appeara
 
 ## Help and workflow guide
 
-Help opens with the shared-team purpose of the app and a material-to-trials workflow. Fourteen linked chapters explain actual button sequences for registration, navigation, moulds, both BOM files, Gemini review, receiving and corrections, process/vendor allotment, returns, dates, plan sharing, trials, user approval, personal settings and offline sync. The complete guide is translated into English, Hindi and Marathi. A rendering regression test checks the actual Help component, including its tour button, in every language.
+Help opens with the shared-team purpose of the app and a material-to-trials workflow. Fifteen linked chapters explain actual button sequences for registration, navigation, moulds, both BOM files, Gemini review, receiving and corrections, process/vendor allotment, returns, dates, plan sharing, trials, user approval, personal settings and offline sync. The complete guide is translated into English, Hindi and Marathi. A rendering regression test checks the actual Help component, including its tour button, in every language.
 
 ## Docker hosting
 
@@ -50,3 +50,7 @@ See [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) for project creation, migra
 
 ## Database schema artifact
 The consolidated fresh-project SQL is [supabase/schema.sql](supabase/schema.sql). The [schema guide](docs/SUPABASE_SCHEMA.md) includes the table dictionary, access matrix and relationship diagram. The existing hosted project already has its source migrations; do not rerun the fresh-project installer there. Regenerate it with `npm run schema:build` after migration changes.
+
+## Administrative cleanup
+
+Admins and developers have recoverable Edit, Delete and Restore controls in Settings → Manage data and on each mould. See [the administration guide](docs/ADMIN_DATA_MANAGEMENT.md) for covered records, retained audit history, workflow checks and migration activation. The live edit/delete/restore flow is verified after manual SQL application. Register the manual migrations using the linked guide before enabling automatic database deployment.

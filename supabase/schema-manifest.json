@@ -92,7 +92,11 @@
     {
       "file": "20261112075423_configurable_processes.sql",
       "sha256": "a7ddf8fd454d5ed6d88b238b3e6f065f3601f7c6907cdd71b8ab08786a7b659c"
+    },
+    {
+      "file": "20261112160000_admin_data_management.sql",
+      "sha256": "1dbc3fd929db9dac58c328d7d38b49d3a48a16534721b16d5ff21867e1a6d0fd"
     }
   ],
-  "schemaSha256": "1b9cabd37b89267d46dad7e13a2dcab5e104dc44a62204dbad49170db301206d"
+  "schemaSha256": "7209c5ac9e872fc4857fe8d58255b07dc5fb601311bd56cc628e927de9561ad1"
 }

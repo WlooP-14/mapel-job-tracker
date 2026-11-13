@@ -12,6 +12,7 @@ import BomUpload from './BomUpload';
 import {loadDraft} from '../lib/drafts';
 import BomFiles from './BomFiles';
 import EditMould from './EditMould';
+import AdminDataManager from './AdminDataManager';
 import Receiving from './Receiving';
 import Planning from './Planning';
 import MouldRemarks from './MouldRemarks';
@@ -58,6 +59,7 @@ export default function MouldDetail({client,profile,job,customer,customers=[],t,
  const date=value=>value?new Intl.DateTimeFormat(locale,{day:'numeric',month:'short',year:'numeric'}).format(new Date(value+'T12:00:00')):w.notSet;
  return <section className="space-y-5"><Button onClick={onBack}><Icon name="back"/>{w.backToMoulds}</Button><div className="section-heading"><h2 className="page-title">{job.mould_code}</h2>{profile.role==='viewer'&&<span className="plain-badge">{t.screens.readOnly}</span>}</div><section className="panel mould-card"><div className="section-heading"><div><p className="muted">{w.customer}</p><h3>{customer||w.noCustomer}</h3></div><span className="plain-badge">{w.priorities[job.priority]}</span></div><p className="font-bold text-xl">{job.name}</p><p className="date-line"><Icon name="clock"/><strong>{w.trialDate}:</strong> {date(job.trial_date_t0)}</p><p className="muted">{w.states[job.status]}</p><Readiness ready={ready} total={applicable} t={t}/></section>
  {canEdit&&<Button className="w-full" onClick={()=>setEditing(true)}>{t.editMould.title}</Button>}
+ <AdminDataManager client={client} profile={profile} t={t} job={job} onChanged={(action,entity)=>{if(entity==='jobs'&&action==='delete'){onUpdated();onBack();}else{reload();onUpdated();}}}/>
  {canEdit&&<Button primary className="w-full" onClick={()=>setUploading(true)}><Icon name="plus"/>{t.bom.addBom}</Button>}
  {notice&&<p role="status" className="notice">{notice}</p>}
  <BomFiles client={client} job={job} t={t} version={revisions[0]?.id} onUseFile={canEdit&&!loading&&!error?setReviewing:null}/>

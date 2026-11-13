@@ -10,6 +10,7 @@ import PlanningSettings from './PlanningSettings';
 import ProcessSettings from './ProcessSettings';
 import ExtractionSettings from './ExtractionSettings';
 import AppearanceSettings from './AppearanceSettings';
+import AdminDataManager from './AdminDataManager';
 function Counter({value,onChange,busy,label,t}){return <div className="counter" aria-label={label}><button type="button" disabled={busy||value===0} onClick={()=>onChange(Math.max(0,(value??1)-1))} aria-label={t.shell.remove+' '+label}>−</button><output className="plain-badge" aria-live="polite">{value??t.workflow.notSet}</output><button type="button" disabled={busy||value>=365} onClick={()=>onChange((value??0)+1)} aria-label={t.shell.add+' '+label}>+</button></div>;}
 export default function Settings({client,profile,t,language,onLanguage,appearance,onTour,onLogout}){
  const developer=profile.role==='developer';
@@ -36,6 +37,7 @@ export default function Settings({client,profile,t,language,onLanguage,appearanc
  return <div className="settings-grid"><div><h2 className="page-title">{t.settings}</h2><p className="muted mt-2">{h.configuration}</p></div><ActionGuide t={t} topic="settings"/>{notice&&<div role="status" className="notice">{notice}{undo&&<Button onClick={undoArchive} disabled={busy}>{h.undo}</Button>}</div>}
  <Section title={t.profile} hint={h.settingsHint} icon="settings"><div className="settings-profile"><span className="avatar">{profile.name.slice(0,2).toUpperCase()}</span><div><strong>{profile.name}</strong><p className="muted">{h.roles[profile.role]} · {profile.phone}</p></div></div><p className="font-bold mb-3">{t.language}</p><LanguageSwitch t={t} language={language} onChange={onLanguage}/><Button className="mt-4 w-full" onClick={onTour}><Icon name="clock"/>{h.replayTour}</Button><details className="mt-4 border-t border-[var(--border)] pt-3"><summary className="font-bold cursor-pointer">{t.changePin}</summary><form onSubmit={changePin} className="inline-form"><p className="muted">{developer?h.newPinHelp:t.teamAuth.newPinHelp}</p><Field label={developer?t.newPin:t.teamAuth.pin}>{id=><input id={id} className={inputClass} type="password" autoComplete="new-password" inputMode="numeric" pattern={pinPattern} maxLength={developer?12:6} value={pin} required onChange={e=>setPin(e.target.value)}/>}</Field><Field label={t.confirmPin}>{id=><input id={id} className={inputClass} type="password" autoComplete="new-password" inputMode="numeric" required value={confirm} onChange={e=>setConfirm(e.target.value)}/>}</Field><Button disabled={busy}>{busy?t.loading:t.changePin}</Button></form></details></Section>
  <AppearanceSettings t={t} value={appearance.appearance} onChange={appearance.change} busy={appearance.busy} pending={appearance.pending}/>
+ {canManage&&<AdminDataManager client={client} profile={profile} t={t} onChanged={load}/>}
  {['developer','admin','operator'].includes(profile.role)&&<ProcessSettings client={client} t={t} onSaved={load}/>}
  {canManage&&(loading?<StateBox title={t.loading}/>:loadError?<StateBox title={loadError} error action={<Button onClick={load}>{h.retry}</Button>}/>:<>
  <PlanningSettings client={client} t={t}/>
